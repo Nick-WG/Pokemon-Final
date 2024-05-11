@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokémon Information</title>
+    <style>
+      .pokemon-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 20px;
+      }
+
+      .pokemon-list {
+        overflow-y: auto;
+      }
+
+      .pokemon-list li:hover {
+        color: blue;
+        cursor: pointer;
+      }
+
+      .pokemon-card img {
+        max-width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Generation 1 Pokémon</h1>
+    <div class="pokemon-grid">
+      <ul class="pokemon-list" id="pokemon-list"></ul>
+      <div id="pokemon-detail"></div>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        fetch('https://pokeapi.co/api/v2/pokemon?limit=151')
+          .then((response) => response.json())
+          .then((data) => {
+            const pokemonNames = data.results.map((pokemon) => pokemon.name)
+            displayPokemonList(pokemonNames)
+          })
+          .catch((error) => console.log('Error fetching Pokémon:', error))
+
+        function displayPokemonList(pokemonNames) {
+          const pokemonList = document.getElementById('pokemon-list')
+          pokemonNames.forEach((name) => {
+            const formattedName = name.charAt(0).toUpperCase() + name.slice(1)
+            const listItem = document.createElement('li')
+            listItem.textContent = formattedName
+            listItem.addEventListener('click', () => fetchPokemonData(name))
+            pokemonList.appendChild(listItem)
+          })
+        }
+
+        function fetchPokemonData(name) {
+          fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)
+            .then((response) => response.json())
+            .then((data) => {
+              const pokemonName = data.name.toUpperCase()
+              const pokemonSprite = data.sprites.front_default
+              const pokemonTypes = data.types
+                .map((type) => type.type.name)
+                .join(', ')
+              const pokemonId = data.id
+              displayPokemonDetail(
+                pokemonName,
+                pokemonSprite,
+                pokemonTypes,
+                pokemonId
+              )
+            })
+            .catch((error) =>
+              console.log('Error fetching Pokémon data:', error)
+            )
+        }
+
+        function displayPokemonDetail(name, sprite, types, id) {
+          const pokemonDetail = document.getElementById('pokemon-detail')
+          pokemonDetail.innerHTML = ''
+          const card = document.createElement('div')
+          card.classList.add('pokemon-card')
+          const image = document.createElement('img')
+          image.src = sprite
+          const details = document.createElement('div')
+          details.classList.add('pokemon-details')
+          const nameElement = document.createElement('h2')
+          nameElement.textContent = name
+          const typesElement = document.createElement('p')
+          typesElement.textContent = `Type(s): ${types}`
+          const idElement = document.createElement('p')
+          idElement.textContent = `Pokédex Number: ${id}`
+          details.appendChild(nameElement)
+          details.appendChild(typesElement)
+          details.appendChild(idElement)
+          card.appendChild(image)
+          card.appendChild(details)
+          pokemonDetail.appendChild(card)
+        }
+      })
+    </script>
+  </body>
+</html>
